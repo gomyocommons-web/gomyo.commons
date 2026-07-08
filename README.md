@@ -1,151 +1,19 @@
-# gomyo.commons[セットアップ手順.md](https://github.com/user-attachments/files/29809367/default.md)
-# 五名コモンズ_photocloud セットアップ手順
+# @babel/core
 
-五名コモンズのメンバー専用の、写真・動画クラウド Web アプリです。
-Google ドライブ（`gomyo.commons@gmail.com`）に保存された素材を、**スマホ・PC どの端末からでも**
-ログインして閲覧・ダウンロード・複数削除・共有できます。**サーバは不要**（静的サイトとして公開）。
+> Babel compiler core.
 
-```
-[Mac: photo-sorter] 仕分け・アップロード
-        ▼
-[gomyo.commons の Google Drive] 五名コモンズ/案件/原本|編集後/シーン…
-        ▲  Google ログイン＋Drive API
-[このアプリ 五名コモンズ_photocloud] スマホ/PCブラウザで閲覧・DL・削除・共有
-```
+See our website [@babel/core](https://babeljs.io/docs/babel-core) for more information or the [issues](https://github.com/babel/babel/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3A%22pkg%3A%20core%22+is%3Aopen) associated with this package.
 
----
+## Install
 
-## ステップ 0. 用意するもの
-- `gomyo.commons@gmail.com` の Google アカウント（無ければ作成）
-- 五名コモンズメンバーの Google アカウント（Gmail 等）のメール一覧
-- パソコン（初回セットアップ用）
+Using npm:
 
----
-
-## ステップ 1. Google ドライブに親フォルダを作る
-1. `gomyo.commons@gmail.com` で Google ドライブを開く
-2. マイドライブに **`五名コモンズ`** という名前のフォルダを作成
-3. その中に案件フォルダ、さらに `原本` / `編集後` を作る（推奨構造）:
-
-```
-五名コモンズ/
-└── 202607_ぽつんとシネマ_わたし発酵します！/
-    ├── 原本/      ← 元の写真・動画素材
-    └── 編集後/    ← 編集した成果物
+```sh
+npm install --save-dev @babel/core
 ```
 
-> フォルダ名や階層は自由です。このアプリはフォルダ構造をそのまま表示します。
+or using yarn:
 
----
-
-## ステップ 2. Google Cloud で OAuth クライアントを作る（初回だけ・約10分）
-写真・動画は Google ドライブにあるため、アプリが Drive にアクセスする許可（OAuth）を用意します。
-
-1. <https://console.cloud.google.com/> に `gomyo.commons` でログイン
-2. 上部でプロジェクトを新規作成（名前例: `gomyo-photocloud`）
-3. **「API とサービス」→「ライブラリ」** で **Google Drive API** を検索して **有効化**
-4. **「API とサービス」→「OAuth 同意画面」**
-   - User Type: **外部**
-   - アプリ名: `五名コモンズ_photocloud`、サポートメール: `gomyo.commons@gmail.com`
-   - **テストユーザー** に、ログインを許可する**全メンバーのメール**を追加
-     （公開申請はしなくてOK。テストユーザーのままで使えます）
-5. **「認証情報」→「認証情報を作成」→「OAuth クライアント ID」**
-   - 種類: **ウェブアプリケーション**
-   - **承認済みの JavaScript 生成元** に、アプリを開く URL を追加:
-     - ローカル確認用: `http://localhost:5177`
-     - 本番公開用: 例 `https://gomyo-photocloud.vercel.app`（ステップ4で決まる URL）
-   - 作成後に表示される **クライアント ID**（`...apps.googleusercontent.com`）を控える
-
----
-
-## ステップ 3. アプリに設定を書き込む
-`src/config.ts` を開いて、次の2つを書き換えます:
-
-```ts
-export const GOOGLE_CLIENT_ID = "控えたクライアントID.apps.googleusercontent.com";
-
-export const ALLOWED_EMAILS: string[] = [
-  "gomyo.commons@gmail.com",
-  "member1@gmail.com",
-  "member2@gmail.com",
-  // …メンバー全員のメールを列挙
-];
+```sh
+yarn add @babel/core --dev
 ```
-
-- `GOOGLE_CLIENT_ID` … ステップ2で控えたもの（ブラウザに出てOKの公開情報です）
-- `ALLOWED_EMAILS` … ここに無いメールでログインしても、写真・動画は一切表示されません
-- `DRIVE_ROOT_NAME` … 既定は `五名コモンズ`。ステップ1のフォルダ名と一致させます
-- `DRIVE_ROOT_ID`（推奨） … `五名コモンズ` フォルダを Drive で開いた時の URL 末尾
-  `.../folders/★★★` の ★ 部分。ここを入れておくと、同名フォルダの取り違えを確実に防げます
-
-> **セキュリティの注意**: このアプリは Google の「フルドライブ」権限を使うため、OAuth 同意画面は
-> **「テスト」モードのまま**運用してください（メンバーをテストユーザーに登録すればずっと使えます）。
-> 「本番公開」に進めると Google の審査（restricted scope 審査）が必要になります。テストモードは
-> テストユーザー100人までなので、五名コモンズ規模なら問題ありません。
-
----
-
-## ステップ 4. 動かす・公開する
-
-### ローカルで確認
-```bash
-cd 五名コモンズ_photocloud
-npm install      # 初回のみ
-npm run dev      # http://localhost:5177 が開く
-```
-
-### 本番公開（どれか1つ・無料）
-静的ファイルなので、以下のいずれでも公開できます。**HTTPS の URL** が手に入ればスマホからも開けます。
-
-- **Vercel（おすすめ）**: GitHub に置いて Vercel に連携 → 自動で `https://xxx.vercel.app` を発行
-- **Netlify**: `npm run build` で出た `dist/` フォルダをドラッグ＆ドロップ
-- **GitHub Pages**: `npm run build` の `dist/` を公開
-
-> 公開 URL が決まったら、**ステップ2 の「承認済み JavaScript 生成元」にその URL を必ず追加**してください
-> （追加しないとログインでエラーになります）。
-
----
-
-## ステップ 5. メンバーにフォルダを共有する
-1. `gomyo.commons` の Google ドライブで `五名コモンズ` フォルダを右クリック → **共有**
-2. メンバーのメールを追加して権限を選択:
-   - **閲覧者** … 閲覧・ダウンロードのみ（削除させたくない人）
-   - **編集者** … 閲覧・DL・アップロード・削除まで可能
-3. メンバーは公開 URL を開き、**自分の Google アカウントでログイン**すれば、同じ素材が見えます
-
----
-
-## 使い方（メンバー向け）
-- **閲覧**: フォルダをタップして辿る。写真・動画のサムネイルが並びます。タップで拡大・動画再生。
-- **複数選択**: 各カード左上の丸をタップで選択。下のバーから操作:
-  - **一括DL**: 選択したファイルを zip でまとめてダウンロード（1件だけ選んだ時は zip 化せず直接DL）
-    - ※ GB級の大きな動画は、スマホのメモリ対策として **1本ずつダウンロード**すると安定します
-  - **共有**（1件選択時）: リンクを発行してコピー
-  - **削除**: 選択ファイルをゴミ箱へ（一定期間は復元可能）
-- **アップロード**: フォルダを開いて右下の「＋」から写真・動画を追加（編集後の成果物など）
-- **容量の軽量化**: 古い素材は「一括DL でローカル保存 → 一括削除」で Drive を軽く保てます。
-  RAW 原本は各自の Mac（photo-sorter 側）に残るため、元素材はいつでも再利用できます。
-
----
-
-## photo-sorter 側（素材の取り込み・仕分け）
-Mac の photo-sorter で撮影データを仕分けして gomyo.commons の Drive に上げます。
-
-1. photo-sorter を起動しログイン → Drive 接続を **`gomyo.commons@gmail.com`** で行う
-2. 仕分け画面のプリセットで **「五名コモンズ」** を選択（今回追加済み）
-3. 出力先（Drive）を **`五名コモンズ/202607_ぽつんとシネマ.../原本`** に指定して仕分け
-   - JPEG・動画は Drive へ、RAW 原本はローカル保管（容量軽量化）
-4. 編集した成果物は、このアプリの「＋」で **`.../編集後`** フォルダにアップロード
-
-> 五名コモンズのシーン一覧は `photo-sorter/cascara_config.json` の `gomyo` プリセットにあります。
-> シーン名はアプリ画面からでも追加・変更できます。
-
----
-
-## 困ったとき
-- **ログインできない / エラー**: ステップ2の「承認済み JavaScript 生成元」に、今開いている URL が
-  登録されているか確認。テストユーザーにそのメールが入っているかも確認。
-- **「五名コモンズ フォルダが見つかりません」**: そのメンバーにフォルダが共有されているか確認（ステップ5）。
-- **サムネイルが出ない**: ブラウザで Google にログインしていれば表示されます。表示されない場合も
-  タップすれば拡大表示・ダウンロードは可能です。
-- **削除したものを戻したい**: gomyo.commons の Google ドライブの「ゴミ箱」から復元できます。
